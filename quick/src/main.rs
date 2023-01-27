@@ -12,6 +12,13 @@ fn is_array_eq(arr1: &[i32], arr2: &[i32]) -> bool {
     return true;
 }
 
+fn swap(arr: &mut [i32], src: usize, dest: usize) -> &[i32] {
+    let temp = arr[src];
+    arr[src] = arr[dest];
+    arr[dest] = temp;
+    return arr;
+}
+
 // 1. Choose a pivot value to split the range roughly in half
 // 2. Sort the elements relative to the pivot by iteratively comparing
 //    them
@@ -36,45 +43,46 @@ pub fn quick_sort(arr: &mut [i32], from: usize, to: usize) -> &[i32] {
     }
 
     // Choose a value to split the range into two halves
-    let pivot = (arr[from] + arr[from + len / 2] + arr[to - 1]) / 3;
+    let pivot = arr[to - 1];
+    // Index of the first element greater than the pivot, and
+    // after the last element that is less than the pivot.
+    let mut ix_greater = 0;
+    // Index of the first unchecked element, after the last
+    // element that is greater than the pivot.
+    let mut ix_unchecked = 0;
+    let mut pivot_count = 0;
+    while ix_unchecked < len {
+        if arr[from + ix_unchecked] < pivot {
+            swap(arr, from + ix_unchecked, from + ix_greater);
+            ix_greater = ix_greater + 1;
+        } else if arr[from + ix_unchecked] == pivot {
+            swap(arr, from + ix_unchecked, from + ix_greater);
+            ix_greater = ix_greater + 1;
+            pivot_count = pivot_count + 1;
+        }
+        ix_unchecked = ix_unchecked + 1;
+    }
 
-    // TODO: This can be done in-place apparently
-    // Construct the new halves
-    let mut arr_new_left: Vec<i32> = vec![];
-    let mut arr_new_pivot: Vec<i32> = vec![];
-    let mut arr_new_right: Vec<i32> = vec![];
-    for ix in 0..len {
-        let el = arr[from + ix];
-        if el > pivot {
-            arr_new_right.push(el);
-        } else if el == pivot {
-            arr_new_pivot.push(el);
-        } else {
-            arr_new_left.push(el);
+    // Index of the first element equal to the pivot.
+    let mut ix_pivot = 0;
+    // Starting from the pivot (one before ix_greater), expand the pivot
+    // range by finding other elements that equal the pivot. There will
+    // be other elements = pivot in the first half, but this is okay.
+    for ix in 1..ix_greater {
+        if arr[from + ix_greater - ix] != pivot {
+            ix_pivot = ix_greater - ix + 1;
+            break;
         }
     }
 
-    // Reconstruct the two halves into a whole, with the pivot in the middle. There might be
-    // multiple values that are equal to the pivot.
-    let left_len = arr_new_left.len();
-    let right_len = arr_new_right.len();
-    let mut ix = from;
-    for item in arr_new_left.iter() {
-        arr[ix] = *item;
-        ix = ix + 1;
-    }
-    for item in arr_new_pivot.iter() {
-        arr[ix] = *item;
-        ix = ix + 1;
-    }
-    for item in arr_new_right.iter() {
-        arr[ix] = *item;
-        ix = ix + 1;
+    // All items = the pivot, so this range is sorted
+    if pivot_count == len {
+        return arr;
     }
 
     // Recursively sort the two halves, ignoring the pivot range
-    quick_sort(arr, from, from + left_len);
-    quick_sort(arr, to - right_len, to);
+    quick_sort(arr, from, from + ix_pivot);
+    quick_sort(arr, from + ix_greater, to);
 
     return arr;
 }
