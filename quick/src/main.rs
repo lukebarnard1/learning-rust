@@ -69,15 +69,12 @@ pub fn quick_sort(arr: &mut [i32], from: usize, to: usize) -> &[i32] {
     }
 
     // Index of the first element equal to the pivot.
-    let mut ix_pivot = 0;
+    let mut ix_pivot = ix_greater - 1;
     // Starting from the pivot (one before ix_greater), expand the pivot
     // range by finding other elements that equal the pivot. There will
     // be other elements = pivot in the first half, but this is okay.
-    for ix in 1..ix_greater {
-        if arr[from + ix_greater - ix] != pivot {
-            ix_pivot = ix_greater - ix + 1;
-            break;
-        }
+    while ix_pivot > 0 && arr[from + ix_pivot - 1] == pivot {
+        ix_pivot = ix_pivot - 1;
     }
 
     // Recursively sort the two halves, ignoring the pivot range
