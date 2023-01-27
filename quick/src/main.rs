@@ -63,6 +63,11 @@ pub fn quick_sort(arr: &mut [i32], from: usize, to: usize) -> &[i32] {
         ix_unchecked = ix_unchecked + 1;
     }
 
+    // All items = the pivot, so this range is sorted
+    if pivot_count == len {
+        return arr;
+    }
+
     // Index of the first element equal to the pivot.
     let mut ix_pivot = 0;
     // Starting from the pivot (one before ix_greater), expand the pivot
@@ -73,11 +78,6 @@ pub fn quick_sort(arr: &mut [i32], from: usize, to: usize) -> &[i32] {
             ix_pivot = ix_greater - ix + 1;
             break;
         }
-    }
-
-    // All items = the pivot, so this range is sorted
-    if pivot_count == len {
-        return arr;
     }
 
     // Recursively sort the two halves, ignoring the pivot range
